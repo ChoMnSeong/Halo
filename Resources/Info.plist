@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Halo</string>
+    <key>CFBundleDisplayName</key>
+    <string>Halo</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.ensnif.DynamicLake</string>
+    <key>CFBundleExecutable</key>
+    <string>DynamicLake</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <!-- 메뉴막대 전용 accessory 앱 (Dock 아이콘 없음) -->
+    <key>LSUIElement</key>
+    <true/>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.productivity</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>© 2026 ensnif</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>블루투스 기기 연결/해제를 노치에 표시하기 위해 사용합니다.</string>
+</dict>
+</plist>
