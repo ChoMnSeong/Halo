@@ -152,14 +152,15 @@ struct NotchContentView: View {
         let totalHeight = model.notchSize.height + bodyHeight + NotchLayout.tabChrome
         let panelWidth = NotchLayout.trayWidth + 2 * NotchLayout.topFlare   // 본문 폭 = trayWidth(좌우 플레어 안쪽)
 
-        // 접힘 시 노치를 점령한 모듈의 좌우 ear 콘텐츠.
+        // 접힘 시 노치를 점령한 모듈의 ear/peek 콘텐츠.
         let focus = registry.focusModule
         let lead = focus.flatMap { $0.collapsedLeading() }
         let trail = focus.flatMap { $0.collapsedTrailing() }
-        let hasEars = (lead != nil || trail != nil)
+        let peek = focus.flatMap { $0.collapsedPeek() }
+        let hasEars = (lead != nil || trail != nil) && peek == nil
 
         ZStack(alignment: .top) {
-            // 펼침 = 화면 최상단에서 내려오는 단일 검은 패널(노치와 한 몸). 콘텐츠는 노치 아래부터.
+            // 드롭다운 패널 레이어: 펼침(탭 트레이) 또는 접힘 peek(카드).
             if isOpen {
                 ZStack(alignment: .top) {
                     TrayBackground(dropping: dropping)   // 셰이프+그림자(클립 안 함 → 그림자 보존)
@@ -173,9 +174,23 @@ struct NotchContentView: View {
                 .contentShape(ExpandedPanelShape())   // 패널 바깥 투과
                 .animation(.spring(response: 0.3, dampingFraction: 0.86), value: totalHeight)
                 .transition(.scale(scale: 0.92, anchor: .top).combined(with: .opacity))
+            } else if let peek {
+                let peekH = NotchLayout.peekHeight
+                let peekTotal = model.notchSize.height + peekH
+                ZStack(alignment: .top) {
+                    TrayBackground(dropping: false)
+                    peek
+                        .frame(width: NotchLayout.trayWidth, height: peekH)
+                        .padding(.top, model.notchSize.height)
+                        .frame(width: panelWidth, height: peekTotal, alignment: .top)
+                        .clipShape(ExpandedPanelShape())
+                }
+                .frame(width: panelWidth, height: peekTotal, alignment: .top)
+                .contentShape(ExpandedPanelShape())
+                .transition(.scale(scale: 0.92, anchor: .top).combined(with: .opacity))
             }
 
-            // 접힘: 라이브 액티비티 있으면 노치 좌우 ear 알약, 없으면 평범한 노치.
+            // 노치 인디케이터: ear 알약(라이브 액티비티) 또는 평범한 노치.
             if !isOpen && hasEars {
                 CollapsedBar(notchWidth: model.notchSize.width,
                              notchHeight: model.notchSize.height,
@@ -197,6 +212,7 @@ struct NotchContentView: View {
         } isTargeted: { dropping = $0 }
         .animation(.spring(response: 0.34, dampingFraction: 0.84), value: isOpen)
         .animation(.spring(response: 0.34, dampingFraction: 0.86), value: hasEars)
+        .animation(.spring(response: 0.36, dampingFraction: 0.84), value: peek != nil)
         .onChange(of: isOpen) { _, newValue in hitState.isOpen = newValue }
         .onChange(of: hasEars) { _, has in updateCollapsedHit(has) }
         .onAppear { hitState.isOpen = isOpen; updateCollapsedHit(hasEars) }

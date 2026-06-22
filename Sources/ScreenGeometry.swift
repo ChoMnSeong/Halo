@@ -67,6 +67,7 @@ enum NotchLayout {
     static let maxBodyHeight: CGFloat = 200 // 가장 큰 본문(설정/즐겨찾기). 패널은 탭별로 더 작게 줄어듦
     static var maxTrayHeight: CGFloat { maxBodyHeight + tabChrome }
     static let settingsBodyHeight: CGFloat = 200
+    static let peekHeight: CGFloat = 52      // 접힘 peek 드롭다운 카드 본문 높이(연결 등)
     static let trayGap: CGFloat = 0         // 단일 실루엣 융합 — 노치/트레이 간격 제거
     static let trayOverlap: CGFloat = 8     // 트레이가 노치 바닥 아래로 파고드는 음의 겹침(seam 제거)
     static let notchBottomRadius: CGFloat = 13

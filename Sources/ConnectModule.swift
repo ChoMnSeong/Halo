@@ -91,18 +91,41 @@ final class ConnectModule: NotchModule {
 
     func expandedView() -> AnyView { AnyView(ConnectTabBody()) }
 
-    func collapsedLeading() -> AnyView? {
-        guard peekName != nil else { return nil }
+    // 연결/해제 시 노치 아래로 펼쳐지는 드롭다운 카드(기기 아이콘 + 상태 + 이름).
+    func collapsedPeek() -> AnyView? {
+        guard let n = peekName else { return nil }
         return AnyView(
-            Image(systemName: peekConnected ? "dot.radiowaves.left.and.right" : "wifi.slash")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(peekConnected ? Color.blue : .white.opacity(0.6))
+            HStack(spacing: 12) {
+                Image(systemName: Self.icon(for: n))
+                    .font(.system(size: 17))
+                    .foregroundStyle(.white.opacity(0.92))
+                    .frame(width: 26)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(peekConnected ? "Connected" : "Disconnected")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.white.opacity(0.5))
+                    Text(n)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         )
     }
-    func collapsedTrailing() -> AnyView? {
-        guard let n = peekName else { return nil }
-        return AnyView(Text(n).font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(peekConnected ? Color.blue : .white.opacity(0.7)).lineLimit(1))
+
+    /// 기기 이름으로 아이콘 추정.
+    static func icon(for name: String) -> String {
+        let n = name.lowercased()
+        if n.contains("airpod") || n.contains("buds") || n.contains("headphone")
+            || n.contains("beats") || n.contains("wh-") || n.contains("sony") { return "headphones" }
+        if n.contains("mouse") || n.contains("mx ") || n.contains("mx master")
+            || n.contains("mx anywhere") || n.contains("magic mouse") { return "computermouse.fill" }
+        if n.contains("keyboard") { return "keyboard.fill" }
+        if n.contains("trackpad") { return "trackpad.fill" }
+        return "dot.radiowaves.left.and.right"
     }
 }
 

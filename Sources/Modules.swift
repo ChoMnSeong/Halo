@@ -42,6 +42,7 @@ protocol NotchModule: AnyObject {
     func expandedView() -> AnyView             // 펼침 탭 본문
     func collapsedLeading() -> AnyView?        // 접힘 시 노치 왼쪽 ear(라이브 액티비티)
     func collapsedTrailing() -> AnyView?       // 접힘 시 노치 오른쪽 ear
+    func collapsedPeek() -> AnyView?           // 접힘 시 노치 아래로 펼쳐지는 드롭다운 카드(ear 대신)
     func onBootstrap()                         // 등록 직후 1회(모니터 시작 등)
 }
 
@@ -51,6 +52,7 @@ extension NotchModule {
     var preferredExpandedHeight: CGFloat { 180 }
     func collapsedLeading() -> AnyView? { nil }
     func collapsedTrailing() -> AnyView? { nil }
+    func collapsedPeek() -> AnyView? { nil }
     func onBootstrap() {}
 }
 
