@@ -139,27 +139,27 @@ final class TimerModule: NotchModule {
     }
 
     func expandedView() -> AnyView { AnyView(TimerTabBody()) }
-    func collapsedAccessory() -> AnyView { AnyView(TimerNotchAccessory()) }
-}
 
-/// 접힘 노치 슬롯 — 링 + 남은 시간(가장 임박한 타이머). "항상 보이게".
-struct TimerNotchAccessory: View {
-    private var store = TimerStore.shared
-
-    var body: some View {
-        if let t = store.primary {
-            HStack(spacing: 4) {
-                Circle()
-                    .trim(from: 0, to: t.fraction(store.now))
-                    .stroke(t.finished ? Color.red : Color.orange,
-                            style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .frame(width: 10, height: 10)
-                Text(t.finished ? "완료" : store.format(t.remaining(store.now)))
-                    .font(.system(size: 9, weight: .semibold, design: .rounded))
-                    .foregroundStyle(t.finished ? .red : .orange)
-            }
-        }
+    // 접힘 시 노치 좌우 ear: 왼쪽=진행 링, 오른쪽=남은 시간("항상 보이게").
+    func collapsedLeading() -> AnyView? {
+        guard let t = store.primary else { return nil }
+        return AnyView(
+            Circle()
+                .trim(from: 0, to: t.fraction(store.now))
+                .stroke(t.finished ? Color.red : Color.orange,
+                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .frame(width: 13, height: 13)
+        )
+    }
+    func collapsedTrailing() -> AnyView? {
+        guard let t = store.primary else { return nil }
+        return AnyView(
+            Text(t.finished ? "완료" : store.format(t.remaining(store.now)))
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(t.finished ? .red : .orange)
+                .monospacedDigit()
+        )
     }
 }
 

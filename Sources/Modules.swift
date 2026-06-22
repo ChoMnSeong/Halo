@@ -40,7 +40,8 @@ protocol NotchModule: AnyObject {
     var wantsAutoExpand: Bool { get }          // true 면 노치 자동 펼침(예: 전화 수신)
     var preferredExpandedHeight: CGFloat { get } // 펼침 본문 높이(패널이 내용에 맞게 줄어듦)
     func expandedView() -> AnyView             // 펼침 탭 본문
-    func collapsedAccessory() -> AnyView       // 접힘 시 노치 바닥 슬롯(작게)
+    func collapsedLeading() -> AnyView?        // 접힘 시 노치 왼쪽 ear(라이브 액티비티)
+    func collapsedTrailing() -> AnyView?       // 접힘 시 노치 오른쪽 ear
     func onBootstrap()                         // 등록 직후 1회(모니터 시작 등)
 }
 
@@ -48,7 +49,8 @@ extension NotchModule {
     var permission: ModulePermission { .none }
     var wantsAutoExpand: Bool { false }
     var preferredExpandedHeight: CGFloat { 180 }
-    func collapsedAccessory() -> AnyView { AnyView(EmptyView()) }
+    func collapsedLeading() -> AnyView? { nil }
+    func collapsedTrailing() -> AnyView? { nil }
     func onBootstrap() {}
 }
 
@@ -118,16 +120,7 @@ final class ShelfModule: NotchModule {
     var preferredExpandedHeight: CGFloat { store.items.isEmpty ? 64 : 104 }
 
     func expandedView() -> AnyView { AnyView(ShelfTabBody()) }
-
-    func collapsedAccessory() -> AnyView {
-        AnyView(
-            Group {
-                if !store.items.isEmpty {
-                    Capsule().fill(.white.opacity(0.55)).frame(width: 26, height: 3)
-                }
-            }
-        )
-    }
+    // 셸프는 라이브 액티비티 아님 → ear 없음(접힘 시 평범한 노치).
 }
 
 /// 셸프 탭 본문 — 빈 상태 안내 또는 칩 가로 스크롤(+개수/비우기). 펼침 탭에 들어감.

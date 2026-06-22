@@ -48,18 +48,13 @@ final class CallsModule: NotchModule {
 
     func expandedView() -> AnyView { AnyView(CallsTabBody()) }
 
-    func collapsedAccessory() -> AnyView {
-        AnyView(
-            Group {
-                if let c = incoming {
-                    HStack(spacing: 4) {
-                        Image(systemName: "phone.fill").font(.system(size: 8, weight: .bold))
-                        Text(c.caller).font(.system(size: 9, weight: .semibold)).lineLimit(1)
-                    }
-                    .foregroundStyle(.green)
-                }
-            }
-        )
+    func collapsedLeading() -> AnyView? {
+        guard incoming != nil else { return nil }
+        return AnyView(Image(systemName: "phone.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(.green))
+    }
+    func collapsedTrailing() -> AnyView? {
+        guard let c = incoming else { return nil }
+        return AnyView(Text(c.caller).font(.system(size: 11, weight: .semibold)).foregroundStyle(.green).lineLimit(1))
     }
 
     /// 접근성 권한 요청(시스템 프롬프트 + 설정 창).

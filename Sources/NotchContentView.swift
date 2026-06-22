@@ -19,19 +19,39 @@ struct NotchShape: Shape {
     }
 }
 
-/// 노치 머리 — ZStack 최상단. 순수 .black 보장(물리 노치 정합 + 트레이 seam 덮음).
-/// 접힘 시 점령 모듈의 collapsedAccessory(손잡이/미니 표시)를 바닥 슬롯에 노출.
+/// 노치 머리(평범) — 순수 .black. 활동 없을 때 접힘 상태 + 펼침 시 최상단 black 보장.
 struct NotchHead: View {
-    let open: Bool
-    let accessory: AnyView
-
     var body: some View {
         NotchShape()
             .fill(.black)
-            .overlay(alignment: .bottom) {
-                if !open { accessory.padding(.bottom, 3) }
-            }
             .contentShape(NotchShape())
+    }
+}
+
+/// 접힘 라이브 액티비티 — 노치 좌우(ear)로 펼쳐지는 검은 알약. 왼쪽/오른쪽 콘텐츠가 노치를 감싼다.
+/// 폭 = notchWidth + 2*ear, 패널 중앙 정렬이라 가운데 노치-갭이 화면 중앙(=물리 노치)에 맞음.
+struct CollapsedBar: View {
+    let notchWidth: CGFloat
+    let notchHeight: CGFloat
+    let leading: AnyView?
+    let trailing: AnyView?
+
+    static let ear: CGFloat = 62
+
+    var body: some View {
+        ZStack {
+            NotchShape(bottomRadius: NotchLayout.notchBottomRadius).fill(.black)
+            HStack(spacing: 0) {
+                (leading ?? AnyView(EmptyView()))
+                    .frame(width: Self.ear - 8, alignment: .trailing)
+                    .padding(.trailing, 8)
+                Color.clear.frame(width: notchWidth)
+                (trailing ?? AnyView(EmptyView()))
+                    .frame(width: Self.ear - 8, alignment: .leading)
+                    .padding(.leading, 8)
+            }
+        }
+        .frame(width: notchWidth + 2 * Self.ear, height: notchHeight)
     }
 }
 
@@ -128,10 +148,15 @@ struct NotchContentView: View {
     }
 
     var body: some View {
-        let accessory = registry.focusModule?.collapsedAccessory() ?? AnyView(EmptyView())
         let bodyHeight = currentBodyHeight
         let totalHeight = model.notchSize.height + bodyHeight + NotchLayout.tabChrome
         let panelWidth = NotchLayout.trayWidth + 2 * NotchLayout.topFlare   // 본문 폭 = trayWidth(좌우 플레어 안쪽)
+
+        // 접힘 시 노치를 점령한 모듈의 좌우 ear 콘텐츠.
+        let focus = registry.focusModule
+        let lead = focus.flatMap { $0.collapsedLeading() }
+        let trail = focus.flatMap { $0.collapsedTrailing() }
+        let hasEars = (lead != nil || trail != nil)
 
         ZStack(alignment: .top) {
             // 펼침 = 화면 최상단에서 내려오는 단일 검은 패널(노치와 한 몸). 콘텐츠는 노치 아래부터.
@@ -150,9 +175,15 @@ struct NotchContentView: View {
                 .transition(.scale(scale: 0.92, anchor: .top).combined(with: .opacity))
             }
 
-            // 접힘 = 노치 머리(좁음). 펼치면 위 패널이 노치 영역을 덮어 한 몸이 됨.
-            NotchHead(open: isOpen, accessory: accessory)
-                .frame(width: model.notchSize.width, height: model.notchSize.height)
+            // 접힘: 라이브 액티비티 있으면 노치 좌우 ear 알약, 없으면 평범한 노치.
+            if !isOpen && hasEars {
+                CollapsedBar(notchWidth: model.notchSize.width,
+                             notchHeight: model.notchSize.height,
+                             leading: lead, trailing: trail)
+            } else {
+                NotchHead()
+                    .frame(width: model.notchSize.width, height: model.notchSize.height)
+            }
         }
         .onHover { hovering = $0 }
         .dropDestination(for: URL.self) { urls, _ in
@@ -165,10 +196,19 @@ struct NotchContentView: View {
             return true
         } isTargeted: { dropping = $0 }
         .animation(.spring(response: 0.34, dampingFraction: 0.84), value: isOpen)
+        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: hasEars)
         .onChange(of: isOpen) { _, newValue in hitState.isOpen = newValue }
-        .onAppear { hitState.isOpen = isOpen }
+        .onChange(of: hasEars) { _, has in updateCollapsedHit(has) }
+        .onAppear { hitState.isOpen = isOpen; updateCollapsedHit(hasEars) }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .ignoresSafeArea(.all)   // 노치 화면 safe area 인셋 무시 → 패널이 화면 최상단에 붙음
+    }
+
+    /// 접힘 시 마우스 받는 영역: ear 펼침이면 알약 폭, 아니면 노치 폭.
+    private func updateCollapsedHit(_ hasEars: Bool) {
+        hitState.collapsedInteractiveSize = hasEars
+            ? CGSize(width: model.notchSize.width + 2 * CollapsedBar.ear, height: model.notchSize.height)
+            : model.notchSize
     }
 }
 

@@ -91,19 +91,18 @@ final class ConnectModule: NotchModule {
 
     func expandedView() -> AnyView { AnyView(ConnectTabBody()) }
 
-    func collapsedAccessory() -> AnyView {
-        AnyView(
-            Group {
-                if let n = peekName {
-                    HStack(spacing: 4) {
-                        Image(systemName: peekConnected ? "dot.radiowaves.left.and.right" : "wifi.slash")
-                            .font(.system(size: 8, weight: .bold))
-                        Text(n).font(.system(size: 9, weight: .semibold)).lineLimit(1)
-                    }
-                    .foregroundStyle(peekConnected ? Color.blue : .white.opacity(0.6))
-                }
-            }
+    func collapsedLeading() -> AnyView? {
+        guard peekName != nil else { return nil }
+        return AnyView(
+            Image(systemName: peekConnected ? "dot.radiowaves.left.and.right" : "wifi.slash")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(peekConnected ? Color.blue : .white.opacity(0.6))
         )
+    }
+    func collapsedTrailing() -> AnyView? {
+        guard let n = peekName else { return nil }
+        return AnyView(Text(n).font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(peekConnected ? Color.blue : .white.opacity(0.7)).lineLimit(1))
     }
 }
 

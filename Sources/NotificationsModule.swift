@@ -62,18 +62,13 @@ final class NotificationsModule: NotchModule {
 
     func expandedView() -> AnyView { AnyView(NotificationsTabBody()) }
 
-    func collapsedAccessory() -> AnyView {
-        AnyView(
-            Group {
-                if let p = peeking {
-                    HStack(spacing: 4) {
-                        Image(systemName: "bell.fill").font(.system(size: 8))
-                        Text(p.title).font(.system(size: 9, weight: .medium)).lineLimit(1)
-                    }
-                    .foregroundStyle(.white.opacity(0.9))
-                }
-            }
-        )
+    func collapsedLeading() -> AnyView? {
+        guard peeking != nil else { return nil }
+        return AnyView(Image(systemName: "bell.fill").font(.system(size: 10)).foregroundStyle(.white.opacity(0.9)))
+    }
+    func collapsedTrailing() -> AnyView? {
+        guard let p = peeking else { return nil }
+        return AnyView(Text(p.title).font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.9)).lineLimit(1))
     }
 }
 
