@@ -19,7 +19,7 @@ final class NotificationsModule: NotchModule {
     private(set) var isAuthorized = AXIsProcessTrusted()
     private(set) var recent: [NotificationEvent] = []
     private(set) var peeking: NotificationEvent?     // 방금 도착(노치 피크)
-    private var peekTimer: Timer?
+    private var peekGen = 0
     private var pollTimer: Timer?
 
     /// 막 도착했을 때만 노치 잠깐 점령(.event). 평소엔 .idle(거슬리지 않게). 자동 펼침은 안 함.
@@ -51,9 +51,11 @@ final class NotificationsModule: NotchModule {
         recent.insert(ev, at: 0)
         if recent.count > 20 { recent.removeLast(recent.count - 20) }
         peeking = ev
-        peekTimer?.invalidate()
-        peekTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { [weak self] _ in
-            MainActor.assumeIsolated { self?.peeking = nil }
+        peekGen += 1
+        let gen = peekGen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self, self.peekGen == gen else { return }
+            self.peeking = nil
         }
     }
 

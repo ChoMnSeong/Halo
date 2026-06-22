@@ -60,7 +60,7 @@ final class ConnectModule: NotchModule {
     private(set) var peekName: String?
     private(set) var peekConnected = true
     private(set) var devices: [String] = []
-    private var peekTimer: Timer?
+    private var peekGen = 0
 
     var activation: ModuleActivation { peekName != nil ? .event : .idle }
     var preferredExpandedHeight: CGFloat {
@@ -83,9 +83,12 @@ final class ConnectModule: NotchModule {
         peekName = name
         peekConnected = connected
         devices = BluetoothMonitor.shared.connectedNames
-        peekTimer?.invalidate()
-        peekTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { [weak self] _ in
-            MainActor.assumeIsolated { self?.peekName = nil }
+        // asyncAfter 는 런루프 모드와 무관하게 메인 큐에서 확실히 발화. 세대 카운터로 재트리거 시 옛 해제 무시.
+        peekGen += 1
+        let gen = peekGen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self, self.peekGen == gen else { return }
+            self.peekName = nil
         }
     }
 
