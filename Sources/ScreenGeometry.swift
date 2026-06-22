@@ -36,8 +36,10 @@ enum ScreenGeometry {
             let w = width > 40 ? width : 200
             return NotchMetrics(notchSize: CGSize(width: w, height: top), hasPhysicalNotch: true)
         } else {
-            // 노치 없는 디스플레이: 메뉴막대 높이에 맞춘 가상 노치.
-            let h = max(NSStatusBar.system.thickness, 24)
+            // 노치 없는 디스플레이: 실제 메뉴막대 높이에 맞춘 가상 노치(statusThickness 22 가 아니라
+            // 진짜 메뉴바 높이 — Tahoe 외부 30px — 라야 노치가 메뉴바를 끝까지 덮어 flush 해 보임).
+            let menuBar = screen.frame.maxY - screen.visibleFrame.maxY
+            let h = menuBar > 1 ? menuBar : max(NSStatusBar.system.thickness, 24)
             return NotchMetrics(notchSize: CGSize(width: 190, height: h), hasPhysicalNotch: false)
         }
     }
